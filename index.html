@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр: Производные и базовые интегралы</title>
+<style>
+:root{
+  --bg:#f7f8fa; --card:#fff; --text:#1f2937; --muted:#6b7280;
+  --accent:#2563eb; --accent-2:#1e40af; --border:#e5e7eb;
+  --ok:#16a34a; --err:#dc2626; --warn:#d97706;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:var(--bg); color:var(--text); line-height:1.7; font-size:16px;
+}
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:underline}
+
+#app{display:flex; min-height:100vh}
+#sidebar{
+  width:290px; flex-shrink:0; background:#0f172a; color:#e2e8f0;
+  padding:24px 18px; position:sticky; top:0; height:100vh; overflow-y:auto;
+}
+#sidebar h1{font-size:18px; margin:0 0 8px; color:#fff; line-height:1.4}
+#sidebar .sub{font-size:13px; color:#94a3b8; margin-bottom:22px}
+#sidebar .ver{
+  display:inline-block; font-size:11px; padding:2px 8px; border-radius:6px;
+  background:#065f46; color:#d1fae5; font-weight:600; margin-top:4px;
+}
+#sidebar nav a{
+  display:block; padding:9px 12px; border-radius:8px; color:#cbd5e1;
+  font-size:14.5px; margin-bottom:4px; transition:background .15s;
+}
+#sidebar nav a:hover{background:#1e293b; text-decoration:none; color:#fff}
+#sidebar nav a.active{background:var(--accent); color:#fff}
+#sidebar .progress{
+  margin-top:24px; padding:12px; background:#1e293b; border-radius:8px;
+  font-size:13px; color:#cbd5e1;
+}
+#sidebar .progress b{color:#fff; font-size:18px; display:block; margin-top:4px}
+
+main{flex:1; padding:36px 44px; max-width:1100px; margin:0 auto}
+@media(max-width:900px){
+  #app{flex-direction:column}
+  #sidebar{width:100%; height:auto; position:relative; padding:16px}
+  #sidebar nav{display:flex; flex-wrap:wrap; gap:6px}
+  #sidebar nav a{margin:0; font-size:13px; padding:7px 10px}
+  main{padding:20px}
+}
+
+section{margin-bottom:60px; scroll-margin-top:20px}
+section h2{
+  font-size:28px; margin:0 0 18px; padding-bottom:12px;
+  border-bottom:2px solid var(--border);
+}
+section h3{font-size:20px; margin:28px 0 12px}
+section h4{font-size:17px; margin:22px 0 8px; color:var(--accent-2)}
+section p{margin:10px 0}
+section ul, section ol{margin:10px 0; padding-left:26px}
+section li{margin:5px 0}
+
+.theory-card{
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:24px 28px; margin-bottom:22px; box-shadow:0 1px 2px rgba(0,0,0,.03);
+}
+.theory-card .label{
+  display:inline-block; font-size:11.5px; font-weight:700; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--accent);
+  background:#eff6ff; padding:3px 9px; border-radius:6px; margin-bottom:12px;
+}
+.formula-block{
+  background:#f1f5f9; border-left:4px solid var(--accent);
+  padding:14px 18px; border-radius:6px; margin:14px 0; overflow-x:auto;
+  font-size:17px;
+}
+.formula-block.center{text-align:center}
+.note{
+  background:#fffbeb; border-left:4px solid var(--warn);
+  padding:12px 16px; border-radius:6px; margin:14px 0; font-size:15px;
+}
+.tip{
+  background:#ecfdf5; border-left:4px solid var(--ok);
+  padding:12px 16px; border-radius:6px; margin:14px 0; font-size:15px;
+}
+.example-block{
+  background:#f8fafc; border-left:4px solid #64748b;
+  padding:14px 18px; border-radius:6px; margin:14px 0;
+}
+.example-block h4{margin-top:0; color:#334155}
+
+m{
+  font-family:'Cambria Math','Latin Modern Math','STIX Two Math',
+              'Times New Roman',serif;
+  font-style:italic;
+}
+.form{font-family:'Cambria Math','STIX Two Math','Times New Roman',serif; font-size:17px}
+
+.tasks-header{
+  display:flex; align-items:center; justify-content:space-between;
+  margin:26px 0 14px;
+}
+.tasks-header h3{margin:0}
+.task{
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:22px 24px; margin-bottom:18px; box-shadow:0 1px 2px rgba(0,0,0,.03);
+  transition:border-color .2s;
+}
+.task.solved{border-color:#86efac; background:#f0fdf4}
+.task-head{display:flex; align-items:center; gap:10px; margin-bottom:12px}
+.task-num{font-weight:700; color:var(--accent); font-size:15px}
+.stars{color:#f59e0b; letter-spacing:1px; font-size:14px}
+.badge{
+  font-size:11.5px; padding:2px 8px; border-radius:10px;
+  background:#e0e7ff; color:#3730a3; font-weight:600;
+}
+.task-statement{
+  margin:8px 0 16px; font-size:19px;
+  font-family:'Cambria Math','STIX Two Math','Times New Roman',serif;
+  padding:8px 0;
+}
+
+.answer-row{display:flex; gap:10px; flex-wrap:wrap; margin:14px 0}
+.answer-row input{
+  flex:1; min-width:220px; padding:11px 14px; font-size:15px;
+  border:1.5px solid var(--border); border-radius:8px;
+  font-family:'Cambria Math','Consolas',monospace;
+  transition:border-color .15s;
+}
+.answer-row input:focus{outline:none; border-color:var(--accent)}
+
+button{
+  font-family:inherit; font-size:14px; font-weight:600;
+  padding:10px 18px; border-radius:8px; border:none; cursor:pointer;
+  transition:all .15s;
+}
+.btn-primary{background:var(--accent); color:#fff}
+.btn-primary:hover{background:var(--accent-2)}
+.btn-ghost{background:#f1f5f9; color:#334155}
+.btn-ghost:hover{background:#e2e8f0}
+.btn-warn{background:#fef3c7; color:#92400e}
+.btn-warn:hover{background:#fde68a}
+
+.feedback{
+  margin-top:12px; padding:12px 16px; border-radius:8px; font-size:15px;
+  display:none;
+}
+.feedback.ok{background:#dcfce7; color:#14532d; display:block}
+.feedback.err{background:#fee2e2; color:#7f1d1d; display:block}
+.feedback.info{background:#e0e7ff; color:#1e3a8a; display:block}
+
+.hint-block{
+  display:none; margin-top:12px; padding:12px 16px;
+  background:#fffbeb; border-left:4px solid var(--warn); border-radius:6px;
+  font-size:15px;
+}
+.solution-block{
+  display:none; margin-top:16px; padding:18px 22px;
+  background:#f8fafc; border-left:4px solid var(--accent); border-radius:8px;
+  font-size:15.5px;
+}
+.solution-block h4{margin:0 0 10px; color:var(--accent); font-size:16px}
+.solution-block p{margin:8px 0}
+
+footer{
+  text-align:center; color:var(--muted); font-size:13px;
+  padding:30px 0 20px; border-top:1px solid var(--border); margin-top:40px;
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <aside id="sidebar">
+    <h1>Тренажёр: Производные и интегралы</h1>
+    <div class="ver">v1 Unicode · 48 задач</div>
+    <div class="sub" style="margin-top:10px">По материалам mathprofi.ru</div>
+    <nav id="nav">
+      <a href="#intro" data-target="intro">Введение</a>
+      <a href="#derivatives" data-target="derivatives">Производные</a>
+      <a href="#integrals" data-target="integrals">Интегралы</a>
+    </nav>
+    <div class="progress">
+      Решено задач:<b id="progress-count">0 / 0</b>
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- ================= ВВЕДЕНИЕ ================= -->
+    <section id="intro">
+      <h2>Введение</h2>
+
+      <div class="theory-card">
+        <span class="label">О тренажёре</span>
+
+        <p>Этот тренажёр поможет отработать два ключевых раздела
+        математического анализа: <b>производные</b> и <b>неопределённые
+        интегралы</b>. Материал разбит на две большие части, в каждой — сначала
+        теория, затем задачи с возрастающей сложностью.</p>
+
+        <h3>Как устроен тренажёр</h3>
+        <ul>
+          <li>В каждом разделе сначала идёт <b>теория</b> с примерами.</li>
+          <li>Затем — <b>задачи</b>, отсортированные по сложности:
+            ★ базовые, ★★ средние, ★★★ повышенной сложности.</li>
+          <li>У каждой задачи три кнопки: <b>«Проверить ответ»</b>,
+            <b>«Подсказка»</b>, <b>«Показать решение»</b>.</li>
+          <li>Прогресс сохраняется в браузере — можно закрыть страницу и
+            вернуться позже.</li>
+        </ul>
+
+        <h3>Почему производные и интегралы вместе</h3>
+
+        <p>Дифференцирование и интегрирование — это <b>два взаимно обратных
+        действия</b>, как сложение и вычитание. Чтобы уверенно брать интегралы,
+        нужно хорошо уметь находить производные — и наоборот, проверка
+        интеграла всегда делается дифференцированием.</p>
+
+        <div class="tip">
+          <b>Совет.</b> Держите под рукой таблицу производных и таблицу
+          интегралов. В теории ниже они приведены полностью — можно распечатать
+          или держать открытыми на соседней вкладке.
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ПРОИЗВОДНЫЕ ================= -->
+    <section id="derivatives">
+      <h2>1. Производные</h2>
+
+      <div class="theory-card">
+        <span class="label">Теория</span>
+
+        <h3>Что такое производная</h3>
+
+        <p><b>Производная</b> функции <m>y</m> = <m>f</m>(<m>x</m>) — это
+        скорость изменения функции при изменении аргумента. Обозначается
+        <m>y</m>′, <m>f</m>′(<m>x</m>) или <m>dy</m>/<m>dx</m>.</p>
+
+        <p>Формальное определение (предел отношения приращений):</p>
+
+        <div class="formula-block center">
+          <m>f</m>′(<m>x</m>) = lim<sub>Δ<m>x</m>→0</sub> [<m>f</m>(<m>x</m>+Δ<m>x</m>) − <m>f</m>(<m>x</m>)] / Δ<m>x</m>.
+        </div>
+
+        <p>Геометрически производная — это <b>угловой коэффициент
+        касательной</b> к графику функции в данной точке. Физически —
+        <b>мгновенная скорость</b> изменения величины.</p>
+
+        <div class="note">
+          <b>Важно.</b> Для успешного нахождения производных достаточно знать
+          таблицу и правила дифференцирования. Понимание определения приходит
+          с практикой.
+        </div>
+
+        <h3>Правила дифференцирования</h3>
+
+        <p>Основные правила, которые нужно знать наизусть:</p>
+
+        <div class="formula-block">
+          <b>1) Константа:</b> (<m>C</m>·<m>u</m>)′ = <m>C</m>·<m>u</m>′<br>
+          <b>2) Сумма/разность:</b> (<m>u</m> ± <m>v</m>)′ = <m>u</m>′ ± <m>v</m>′<br>
+          <b>3) Произведение:</b> (<m>uv</m>)′ = <m>u</m>′<m>v</m> + <m>uv</m>′<br>
+          <b>4) Частное:</b> (<m>u</m>/<m>v</m>)′ = (<m>u</m>′<m>v</m> − <m>uv</m>′) / <m>v</m>²<br>
+          <b>5) Сложная функция:</b> [<m>f</m>(<m>g</m>(<m>x</m>))]′ = <m>f</m>′(<m>g</m>) · <m>g</m>′(<m>x</m>)
+        </div>
+
+        <h3>Таблица производных</h3>
+
+        <div class="formula-block">
+          (<m>C</m>)′ = 0<br>
+          (<m>x</m><sup>n</sup>)′ = <m>n</m>·<m>x</m><sup>n−1</sup><br>
+          (√<m>x</m>)′ = 1/(2√<m>x</m>)<br>
+          (1/<m>x</m>)′ = −1/<m>x</m>²<br>
+          (<m>e</m><sup>x</sup>)′ = <m>e</m><sup>x</sup><br>
+          (<m>a</m><sup>x</sup>)′ = <m>a</m><sup>x</sup>·ln <m>a</m><br>
+          (ln <m>x</m>)′ = 1/<m>x</m><br>
+          (log<sub>a</sub> <m>x</m>)′ = 1/(<m>x</m>·ln <m>a</m>)<br>
+          (sin <m>x</m>)′ = cos <m>x</m><br>
+          (cos <m>x</m>)′ = −sin <m>x</m><br>
+          (tg <m>x</m>)′ = 1/cos²<m>x</m><br>
+          (ctg <m>x</m>)′ = −1/sin²<m>x</m><br>
+          (arcsin <m>x</m>)′ = 1/√(1 − <m>x</m>²)<br>
+          (arccos <m>x</m>)′ = −1/√(1 − <m>x</m>²)<br>
+          (arctg <m>x</m>)′ = 1/(1 + <m>x</m>²)<br>
+          (arcctg <m>x</m>)′ = −1/(1 + <m>x</m>²)
+        </div>
+
+        <h3>Сложная функция</h3>
+
+        <p>Самое важное правило для практики — <b>правило дифференцирования
+        сложной функции</b> (цепное правило):</p>
+
+        <div class="formula-block center" style="background:#fef3c7">
+          <b>[<m>f</m>(<m>g</m>(<m>x</m>))]′ = <m>f</m>′(<m>g</m>(<m>x</m>)) · <m>g</m>′(<m>x</m>)</b>
+        </div>
+
+        <p>Простыми словами: сначала берём производную от <b>внешней</b>
+        функции, оставляя внутреннюю без изменений, а затем умножаем на
+        производную <b>внутренней</b> функции.</p>
+
+        <p><b>Как определить, какая функция внешняя, а какая внутренняя?</b>
+        Представьте, что вычисляете значение на калькуляторе. Что делаете
+        первым? Например, в sin(2<m>x</m> + 1): сначала нужно вычислить
+        2<m>x</m> + 1, потом взять синус. Значит, (2<m>x</m> + 1) —
+        внутренняя, синус — внешняя.</p>
+
+        <div class="example-block">
+          <h4>Пример: y = sin(2x + 1)</h4>
+          <p>Внешняя функция — синус, внутренняя — (2<m>x</m> + 1).</p>
+          <p>y′ = cos(2<m>x</m> + 1) · (2<m>x</m> + 1)′ = cos(2<m>x</m> + 1) · 2 = 2·cos(2<m>x</m> + 1).</p>
+        </div>
+
+        <div class="example-block">
+          <h4>Пример: y = (x² + 3)⁵</h4>
+          <p>Внешняя — степень, внутренняя — (x² + 3).</p>
+          <p>y′ = 5(x² + 3)⁴ · (x² + 3)′ = 5(x² + 3)⁴ · 2x = 10x(x² + 3)⁴.</p>
+        </div>
+
+        <h3>Примеры решения</h3>
+
+        <div class="example-block">
+          <h4>Пример 1. y = x³ + 5x² − 7x + 2</h4>
+          <p>Используем правило суммы и таблицу:</p>
+          <p>y′ = (x³)′ + 5(x²)′ − 7(x)′ + (2)′ = 3x² + 5·2x − 7·1 + 0 = 3x² + 10x − 7.</p>
+        </div>
+
+        <div class="example-block">
+          <h4>Пример 2. y = x²·sin x</h4>
+          <p>Правило произведения: (uv)′ = u′v + uv′.</p>
+          <p>u = x², u′ = 2x; v = sin x, v′ = cos x.</p>
+          <p>y′ = 2x·sin x + x²·cos x.</p>
+        </div>
+
+        <div class="example-block">
+          <h4>Пример 3. y = (x + 1)/(x − 1)</h4>
+          <p>Правило частного: (u/v)′ = (u′v − uv′)/v².</p>
+          <p>u = x + 1, u′ = 1; v = x − 1, v′ = 1.</p>
+          <p>y′ = [1·(x − 1) − (x + 1)·1]/(x − 1)² = (x − 1 − x − 1)/(x − 1)² = −2/(x − 1)².</p>
+        </div>
+
+        <h3>Типичные ошибки</h3>
+        <ul>
+          <li><b>Забыть правило сложной функции.</b> Например, пишут
+            (sin 2x)′ = cos 2x, а правильно — 2·cos 2x.</li>
+          <li><b>Путать порядок в правиле частного.</b> Числитель:
+            u′v − uv′, а не uv′ − u′v.</li>
+          <li><b>Не выносить константу.</b> (5x³)′ = 5·3x² = 15x², а не 3x².</li>
+          <li><b>Забыть производную внутренней функции.</b> В (2x + 1)⁴
+            множитель 2 теряется чаще всего.</li>
+        </ul>
+      </div>
+
+      <div class="tasks-header">
+        <h3>Задачи (24)</h3>
+        <span style="color:var(--muted);font-size:14px">сложность ↑</span>
+      </div>
+      <div id="tasks-derivatives"></div>
+    </section>
+
+    <!-- ================= ИНТЕГРАЛЫ ================= -->
+    <section id="integrals">
+      <h2>2. Неопределённые интегралы</h2>
+
+      <div class="theory-card">
+        <span class="label">Теория</span>
+
+        <h3>Что такое неопределённый интеграл</h3>
+
+        <p><b>Неопределённый интеграл</b> — это операция, обратная
+        дифференцированию. Если <m>F</m>′(<m>x</m>) = <m>f</m>(<m>x</m>),
+        то <m>F</m> называется <b>первообразной</b> для <m>f</m>, и</p>
+
+        <div class="formula-block center">
+          ∫ <m>f</m>(<m>x</m>) <m>dx</m> = <m>F</m>(<m>x</m>) + <m>C</m>,
+        </div>
+
+        <p>где <m>C</m> — произвольная постоянная. Она появляется потому, что
+        производная от константы равна нулю: у функции много первообразных,
+        отличающихся на константу.</p>
+
+        <p>Основное свойство интеграла — <b>проверка дифференцированием</b>:</p>
+
+        <div class="formula-block center">
+          (∫ <m>f</m>(<m>x</m>) <m>dx</m>)′ = <m>f</m>(<m>x</m>).
+        </div>
+
+        <h3>Правила интегрирования</h3>
+
+        <div class="formula-block">
+          <b>1) Константа:</b> ∫ <m>k</m>·<m>u</m> <m>dx</m> = <m>k</m>·∫ <m>u</m> <m>dx</m><br>
+          <b>2) Сумма/разность:</b> ∫ (<m>u</m> ± <m>v</m>) <m>dx</m> = ∫ <m>u</m> <m>dx</m> ± ∫ <m>v</m> <m>dx</m><br>
+          <b>3) По частям:</b> ∫ <m>u</m> <m>dv</m> = <m>uv</m> − ∫ <m>v</m> <m>du</m><br>
+          <b>4) Замена:</b> ∫ <m>f</m>(<m>g</m>(<m>x</m>))·<m>g</m>′(<m>x</m>) <m>dx</m> = ∫ <m>f</m>(<m>t</m>) <m>dt</m>
+        </div>
+
+        <h3>Таблица интегралов</h3>
+
+        <div class="formula-block">
+          ∫ 0 <m>dx</m> = <m>C</m><br>
+          ∫ <m>x</m><sup>n</sup> <m>dx</m> = <m>x</m><sup>n+1</sup>/(<m>n</m>+1) + <m>C</m> &nbsp; (<m>n</m> ≠ −1)<br>
+          ∫ (1/<m>x</m>) <m>dx</m> = ln|<m>x</m>| + <m>C</m><br>
+          ∫ <m>e</m><sup>x</sup> <m>dx</m> = <m>e</m><sup>x</sup> + <m>C</m><br>
+          ∫ <m>a</m><sup>x</sup> <m>dx</m> = <m>a</m><sup>x</sup>/ln <m>a</m> + <m>C</m><br>
+          ∫ sin <m>x</m> <m>dx</m> = −cos <m>x</m> + <m>C</m><br>
+          ∫ cos <m>x</m> <m>dx</m> = sin <m>x</m> + <m>C</m><br>
+          ∫ <m>dx</m>/cos²<m>x</m> = tg <m>x</m> + <m>C</m><br>
+          ∫ <m>dx</m>/sin²<m>x</m> = −ctg <m>x</m> + <m>C</m><br>
+          ∫ <m>dx</m>/(1 + <m>x</m>²) = arctg <m>x</m> + <m>C</m><br>
+          ∫ <m>dx</m>/√(1 − <m>x</m>²) = arcsin <m>x</m> + <m>C</m>
+        </div>
+
+        <h3>Метод замены переменной</h3>
+
+        <p>Если интеграл содержит сложное выражение, часто помогает
+        <b>замена переменной</b>. Идея: ввести новую переменную
+        <m>t</m> = <m>g</m>(<m>x</m>), тогда <m>dt</m> = <m>g</m>′(<m>x</m>) <m>dx</m>,
+        и интеграл упрощается.</p>
+
+        <div class="example-block">
+          <h4>Пример: ∫ 2x·cos(x²) dx</h4>
+          <p>Замечаем, что (x²)′ = 2x. Вводим <m>t</m> = x², тогда
+            <m>dt</m> = 2x dx.</p>
+          <p>∫ cos(x²)·2x dx = ∫ cos <m>t</m> <m>dt</m> = sin <m>t</m> + <m>C</m> = sin(x²) + C.</p>
+        </div>
+
+        <h3>Метод интегрирования по частям</h3>
+
+        <p>Применяется для интегралов от произведений, например
+        ∫ <m>x</m>·sin <m>x</m> <m>dx</m>, ∫ <m>x</m>·<m>e</m><sup>x</sup> <m>dx</m>,
+        ∫ ln <m>x</m> <m>dx</m>. Формула:</p>
+
+        <div class="formula-block center" style="background:#fef3c7">
+          <b>∫ <m>u</m> <m>dv</m> = <m>uv</m> − ∫ <m>v</m> <m>du</m></b>
+        </div>
+
+        <p>Алгоритм: выбираем <m>u</m> (то, что при дифференцировании
+        упрощается) и <m>dv</m> (то, что легко интегрируется), затем находим
+        <m>du</m> и <m>v</m>.</p>
+
+        <div class="example-block">
+          <h4>Пример: ∫ x·e^x dx</h4>
+          <p>Полагаем <m>u</m> = x, <m>dv</m> = e<sup>x</sup> dx. Тогда
+            <m>du</m> = dx, <m>v</m> = e<sup>x</sup>.</p>
+          <p>∫ x·e<sup>x</sup> dx = x·e<sup>x</sup> − ∫ e<sup>x</sup> dx = x·e<sup>x</sup> − e<sup>x</sup> + C.</p>
+        </div>
+
+        <h3>Типичные ошибки</h3>
+        <ul>
+          <li><b>Забыть + C.</b> Неопределённый интеграл без константы —
+            неполный ответ.</li>
+          <li><b>Путать знаки.</b> ∫ sin x dx = −cos x + C, а не cos x.</li>
+          <li><b>Неверно выбрать замену.</b> Замена должна упростить
+            интеграл, а не усложнить.</li>
+          <li><b>Забыть модуль.</b> ∫ dx/x = ln|x| + C, а не ln x.</li>
+          <li><b>Ошибка в формуле по частям:</b> ∫ u dv = uv − ∫ v du,
+            знак минус.</li>
+        </ul>
+      </div>
+
+      <div class="tasks-header">
+        <h3>Задачи (24)</h3>
+        <span style="color:var(--muted);font-size:14px">сложность ↑</span>
+      </div>
+      <div id="tasks-integrals"></div>
+    </section>
+
+    <footer>
+      Тренажёр: Производные и интегралы · по материалам mathprofi.ru<br>
+      <span style="font-size:11px;color:#9ca3af">v1.0 · Unicode mode · 48 задач</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+/* =========================================================
+   ДАННЫЕ ЗАДАЧ
+   ========================================================= */
+var TASKS = {
+
+  /* ================== ПРОИЗВОДНЫЕ (24) ================== */
+  derivatives: [
+    /* ---- ★ БАЗОВЫЕ (1–8) ---- */
+    { difficulty: 1,
+      statement: 'y = x⁷',
+      answer: "y′ = 7x⁶",
+      accept: ['y\' = 7x^6', 'y\'=7x^6', 'y′ = 7x⁶', '7x^6', '7x⁶'],
+      hint: 'Степенная функция: (xⁿ)′ = n·xⁿ⁻¹.',
+      solution:
+        '<p><b>Шаг 1.</b> Применяем формулу (xⁿ)′ = n·xⁿ⁻¹.</p>' +
+        '<p><b>Шаг 2.</b> Здесь n = 7, поэтому y′ = 7·x⁷⁻¹ = 7x⁶.</p>' +
+        '<p><b>Ответ:</b> <b>y′ = 7x⁶</b>.</p>'
+    },
+    { difficulty: 1,
+      statement: 'y = 5x³ − 2x + 4',
+      answer: "y′ = 15x² − 2",
+      accept: ['y\' = 15x^2 - 2', 'y\'=15x^2-2', 'y′ = 15x² − 2', '15x^2-2'],
+      hint: 'Правило суммы: (u ± v)′ = u′ ± v′. Константа выносится.',
+      solution:
+        '<p><b>Шаг 1.</b> Применяем правило суммы почленно.</p>' +
+        '<p><b>Шаг 2.</b> (5x³)′ = 5·3x² = 15x².</p>' +
+        '<p><b>Шаг 3.</b> (−2x)′ = −2·1 = −2.</p>' +
+        '<p><b>Шаг 4.</b> (4)′ = 0.</p>' +
+        '<p><b>Ответ:</b> <b>y′ = 15x² − 2</b>.</p>'
+    },
+    { difficulty: 1,
+      statement: 'y = sin x',
+      answer: "y′ = cos x",
+      accept: ['y\' = cos x', 'y′ = cos x', 'cos x', 'cosx'],
+      hint: 'Табличная производная.',
+      solution:
+        '<p><b>Шаг 1.</b> По таблице производных: (sin x)′ = cos x.</p>' +
+        '<p><b>Ответ:</b> <b>y′ = cos x</b>.</p>'
+    },
+    { difficulty: 1,
+      statement: 'y = cos x',
+      answer: "y′ = −sin x",
+      accept: ['y\' = -sin x', 'y′ = −sin x', '-sin x', '-sinx'],
+      hint: 'Табличная производная. Обратите внимание на минус!',
+      solution:
+        '<p><b>Шаг 1.</b> По таблице: (cos x)′ = −sin x.</p>' +
+        '<p><b>Ответ:</b> <b>y′ = −sin x</b>.</p>'
+    },
+    { difficulty: 1,
+      statement: 'y = e^x',
+      answer: "y′ = e^x",
+      accept: ['y\' = e^x', 'y′ = e^x', 'e^x'],
+      hint: 'Экспонента — единственная функция, которая не меняется при дифференцировании.',
+      solution:
+        '<p><b>Шаг 1.</b> По таблице: (e<sup>x</sup>)′ = e<sup>x</sup>.</p>' +
+        '<p><b>Ответ:</b> <b>y′ = e<sup>x</sup></b>.</p>'
+    },
+    { difficulty: 1,
+      statement: 'y = ln x',
+      answer: "y′ = 1/x",
+      accept: ['y\' = 1/x', 'y′ = 1/x', '1/x'],
+      hint: 'Табличная производная натурального логарифма.',
+      solution:
+        '<p><b>Шаг 1.</b> По таблице: (ln x)′ = 1/x.</p>' +
+        '<p><b>Ответ:</b> <b>y′ = 1/x</b>.</p>'
+    },
+    { difficulty: 1,
+      statement: 'y = √x',
+      answer: "y′ = 1/(2√x)",
+      accept: ['y\' = 1/(2√x)', 'y′ = 1/(2√x)', '1/(2sqrt(x))', '1/(2√x)'],
+      hint: 'Запишите √x как x^(1/2) и примените (xⁿ)′ = n·xⁿ⁻¹.',
+      solution:
+        '<p><b>Шаг 1.</b> √x = x<sup>1/2</sup>.</p>' +
+        '<p><b>Шаг 2.</b> y′ = (1/2)·x<sup>1/2 − 1</sup> = (1/2)·x<sup>−1/2</sup>.</p>' +
+        '<p><b>Шаг 3.</b> Переписываем: (1/2)·(1/√x) = 1/(2√x).</p>' +
+        '<p><b>Ответ:</b> <b>y′ = 1/(2√x)</b>.</p>'
+    },
+    { difficulty: 1,
+      statement: 'y = 1/x',
+      answer: "y′ = −1/x²",
+      accept: ['y\' = -1/x^2', 'y′ = −1/x²', '-1/x^2', '−1/x²'],
+      hint: 'Запишите как x⁻¹ и примените (xⁿ)′ = n·xⁿ⁻¹.',
+      solution:
+        '<p><b>Шаг 1.</b> 1/x = x<sup>−1</sup>.</p>' +
+        '<p><b>Шаг 2.</b> y′ = −1·x<sup>−1−1</sup> = −x<sup>−2</sup> = −1/x².</p>' +
+        '<p><b>Ответ:</b> <b>y′ = −1/x²</b>.</p>'
+    },
+
+    /* ---- ★★ СРЕДНИЕ (9–16) ---- */
+    { difficulty: 2,
+      statement: 'y = x²·sin x',
+      answer: "y′ = 2x·sin x + x²·cos x",
+      accept: ['y\' = 2x sin x + x^2 cos x', 'y′ = 2x·sin x + x²·cos x',
+               '2xsinx + x^2cosx', '2x*sinx + x^2*cosx'],
+      hint: 'Правило произведения: (uv)′ = u′v + uv′.',
+      solution:
+        '<p><b>Шаг 1.</b> Обозначим u = x², v = sin x.</p>' +
+        '<p><b>Шаг 2.</b> u′ = 2x, v′ = cos x.</p>' +
+        '<p><b>Шаг 3.</b> (uv)′ = u′v + uv′ = 2x·sin x + x²·cos x.</p>' +
+        '<p><b>Ответ:</b> <b>y′ = 2x·sin x + x²·cos x</b>.</p>'
+    },
+    { difficulty: 2,
+      statement: 'y = (x + 1)/(x − 1)',
+      answer: "y′ = −2/(x − 1)²",
+      accept: ['y\' = -2/(x-1)^2', 'y′ = −2/(x − 1)²', '-2/(x-1)^2',
+               '−2/(x−1)²'],
+      hint: 'Правило частного: (u/v)′ = (u′v − uv′)/v².',
+      solution:
+        '<p><b>Шаг 1.</b> u = x + 1, v = x − 1.</p>' +
+        '<p><b>Шаг 2.</b> u′ = 1, v′ = 1.</p>' +
+        '<p><b>Шаг 3.</b> y′ = [1·(x − 1) − (x + 1)·1]/(x − 1)².</p>' +
+        '<p><b>Шаг 4.</b> Числитель: x − 1 − x − 1 = −2.</p>' +
+        '<p><b>Ответ:</b> <b>y′ = −2/(x − 1)²</b>.</p>'
+    },
+    { difficulty: 2,
+      statement: 'y = x·e^x',
+      answer: "y′ = e^x·(x + 1)",
+      accept: ['y\' = e^x (x + 1)', 'y′ = e^x·(x + 1)', 'e^x(x+1)',
+               'e^x*(x+1)', 'e^x + xe^x'],
+      hint: 'Правило произведения: u = x, v = e^x.',
+      solution:
+        '<p><b>Шаг 1.</b> u = x, v = e<sup>x</sup>.</p>' +
+        '<p><b>Шаг 2.</b> u′ = 1, v′ = e<sup>x</sup>.</p>' +
+        '<p><b>Шаг 3.</b> y′ = 1·e<sup>x</sup> + x·e<sup>x</sup> = e<sup>x</sup>·(1 + x).</p>' +
+        '<p><b>Ответ:</b> <b>y′ = e<sup>x</sup>·(x + 1)</b>.</p>'
+    },
+    { difficulty: 2,
+      statement: 'y = x·ln x',
+      answer: "y′ = ln x + 1",
+      accept: ['y\' = ln x + 1', 'y′ = ln x + 1', 'lnx + 1', 'ln x +1'],
+      hint: 'Правило произведения: u = x, v = ln x.',
+      solution:
+        '<p><b>Шаг 1.</b> u = x, v = ln x.</p>' +
+        '<p><b>Шаг 2.</b> u′ = 1, v′ = 1/x.</p>' +
+        '<p><b>Шаг 3.</b> y′ = 1·ln x + x·(1/x) = ln x + 1.</p>' +
+        '<p><b>Ответ:</b> <b>y′ = ln x + 1</b>.</p>'
+    },
+    { difficulty: 2,
+      statement: 'y = sin x / x',
+      answer: "y′ = (x·cos x − sin x)/x²",
+      accept: ['y\' = (x cos x - sin x)/x^2',
+               'y′ = (x·cos x − sin x)/x²',
+               '(xcosx - sinx)/x^2', '(x·cosx − sinx)/x²'],
+      hint: 'Правило частного: u = sin x, v = x.',
+      solution:
+        '<p><b>Шаг 1.</b> u = sin x, v = x.</p>' +
+        '<p><b>Шаг 2.</b> u′ = cos x, v′ = 1.</p>' +
+        '<p><b>Шаг 3.</b> y′ = [cos x·x − sin x·1]/x² = (x·cos x − sin x)/x².</p>' +
+        '<p><b>Ответ:</b> <b>y′ = (x·cos x − sin x)/x²</b>.</p>'
+    },
+    { difficulty: 2,
+      statement: 'y = x³·cos x',
+      answer: "y′ = 3x²·cos x − x³·sin x",
+      accept: ['y\' = 3x^2 cos x - x^3 sin x',
+               'y′ = 3x²·cos x − x³·sin x',
+               '3x^2cosx - x^3sinx'],
+      hint: 'Правило произведения: u = x³, v = cos x.',
+      solution:
+        '<p><b>Шаг 1.</b> u = x³, v = cos x.</p>' +
+        '<p><b>Шаг 2.</b> u′ = 3x², v′ = −sin x.</p>' +
+        '<p><b>Шаг 3.</b> y′ = 3x²·cos x + x³·(−sin x).</p>' +
+        '<p><b>Ответ:</b> <b>y′ = 3x²·cos x − x³·sin x</b>.</p>'
+    },
+    { difficulty: 2,
+      statement: 'y = ln x / x',
+      answer: "y′ = (1 − ln x)/x²",
+      accept: ['y\' = (1 - ln x)/x^2', 'y′ = (1 − ln x)/x²',
+               '(1-lnx)/x^2', '(1−lnx)/x²'],
+      hint: 'Правило частного: u = ln x, v = x.',
+      solution:
+        '<p><b>Шаг 1.</b> u = ln x, v = x.</p>' +
+        '<p><b>Шаг 2.</b> u′ = 1/x, v′ = 1.</p>' +
+        '<p><b>Шаг 3.</b> y′ = [(1/x)·x − ln x·1]/x² = (1 − ln x)/x².</p>' +
+        '<p><b>Ответ:</b> <b>y′ = (1 − ln x)/x²</b>.</p>'
+    },
+    { difficulty: 2,
+      statement: 'y = (2x + 3)⁴',
+      answer: "y′ = 8(2x + 3)³",
+      accept: ['y\' = 8(2x + 3)^3', 'y′ = 8(2x + 3)³', '8(2x+3)^3',
+               '8(2x+3)³'],
+      hint: 'Сложная функция: внешняя — степень, внутренняя — (2x + 3).',
+      solution:
+        '<p><b>Шаг 1.</b> Внешняя функция: u⁴, внутренняя: u = 2x + 3.</p>' +
+        '<p><b>Шаг 2.</b> (u⁴)′ = 4u³.</p>' +
+        '<p><b>Шаг 3.</b> u′ = 2.</p>' +
+        '<p><b>Шаг 4.</b> y′ = 4(2x + 3)³·2 = 8(2x + 3)³.</p>' +
+        '<p><b>Ответ:</b> <b>y′ = 8(2x + 3)³</b>.</p>'
+    },
+
+    /* ---- ★★★ СЛОЖНЫЕ (17–24) ---- */
+    { difficulty: 3,
+      statement: 'y = sin(3x + 1)',
+      answer: "y′ = 3·cos(3x + 1)",
+      accept: ['y\' = 3cos(3x + 1)', 'y′ = 3·cos(3x + 1)',
+               '3cos(3x+1)', '3cos(3x+1)'],
+      hint: 'Сложная функция: внешняя — sin, внутренняя — (3x + 1).',
+      solution:
+        '<p><b>Шаг 1.</b> Внешняя функция: sin u, внутренняя: u = 3x + 1.</p>' +
+        '<p><b>Шаг 2.</b> (sin u)′ = cos u.</p>' +
+        '<p><b>Шаг 3.</b> u′ = 3.</p>' +
+        '<p><b>Шаг 4.</b> y′ = cos(3x + 1)·3.</p>' +
+        '<p><b>Ответ:</b> <b>y′ = 3·cos(3x + 1)</b>.</p>'
+    },
+    { difficulty: 3,
+      statement: 'y = e^(x²)',
+      answer: "y′ = 2x·e^(x²)",
+      accept: ['y\' = 2x e^(x^2)', 'y′ = 2x·e^(x²)', '2xe^(x^2)',
+               '2x·e^(x²)'],
+      hint: 'Сложная функция: внешняя — e^u, внутренняя — u = x².',
+      solution:
+        '<p><b>Шаг 1.</b> Внешняя функция: e<sup>u</sup>, внутренняя: u = x².</p>' +
+        '<p><b>Шаг 2.</b> (e<sup>u</sup>)′ = e<sup>u</sup>.</p>' +
+        '<p><b>Шаг 3.</b> u′ = 2x.</p>' +
+        '<p><b>Шаг 4.</b> y′ = e<sup>x²</sup>·2x.</p>' +
+        '<p><b>Ответ:</b> <b>y′ = 2x·e<sup>x²</sup></b>.</p>'
+    },
+    { difficulty: 3,
+      statement: 'y = ln(x² + 1)',
+      answer: "y′ = 2x/(x² + 1)",
+      accept: ['y\' = 2x/(x^2 + 1)', 'y′ = 2x/(x² + 1)',
+               '2x/(x^2+1)', '2x/(x²+1)'],
+      hint: 'Сложная функция: внешняя — ln u, внутренняя — u = x² + 1.',
+      solution:
+        '<p><b>Шаг 1.</b> Внешняя: ln u, внутренняя: u = x² + 1.</p>' +
+        '<p><b>Шаг 2.</b> (ln u)′ = u′/u.</p>' +
+        '<p><b>Шаг 3.</b> u′ = 2x.</p>' +
+        '<p><b>Шаг 4.</b> y′ = 2x/(x² + 1).</p>' +
+        '<p><b>Ответ:</b> <b>y′ = 2x/(x² + 1)</b>.</p>'
+    },
+    { difficulty: 3,
+      statement: 'y = √(x² + 1)',
+      answer: "y′ = x/√(x² + 1)",
+      accept: ['y\' = x/√(x^2 + 1)', 'y′ = x/√(x² + 1)', 'x/sqrt(x^2+1)',
+               'x/√(x²+1)'],
+      hint: 'Сложная функция: внешняя — корень, внутренняя — (x² + 1).',
+      solution:
+        '<p><b>Шаг 1.</b> √u = u<sup>1/2</sup>, производная: (1/2)·u<sup>−1/2</sup>.</p>' +
+        '<p><b>Шаг 2.</b> u = x² + 1, u′ = 2x.</p>' +
+        '<p><b>Шаг 3.</b> y′ = (1/(2√u))·2x = x/√(x² + 1).</p>' +
+        '<p><b>Ответ:</b> <b>y′ = x/√(x² + 1)</b>.</p>'
+    },
+    { difficulty: 3,
+      statement: 'y = cos²x',
+      answer: "y′ = −sin 2x",
+      accept: ['y\' = -sin 2x', 'y′ = −sin 2x', '-sin2x', '-sin 2x',
+               '-2 sin x cos x'],
+      hint: 'Это сложная функция: cos²x = (cos x)².',
+      solution:
+        '<p><b>Шаг 1.</b> Внешняя: u², внутренняя: u = cos x.</p>' +
+        '<p><b>Шаг 2.</b> (u²)′ = 2u·u′ = 2·cos x·(−sin x).</p>' +
+        '<p><b>Шаг 3.</b> Используем формулу sin 2x = 2 sin x cos x:</p>' +
+        '<p>y′ = −2 sin x cos x = −sin 2x.</p>' +
+        '<p><b>Ответ:</b> <b>y′ = −sin 2x</b>.</p>'
+    },
+    { difficulty: 3,
+      statement: 'y = tg(2x)',
+      answer: "y′ = 2/cos²(2x)",
+      accept: ['y\' = 2/cos^2(2x)', 'y′ = 2/cos²(2x)', '2/cos^2(2x)',
+               '2/cos²(2x)'],
+      hint: 'Сложная функция: внешняя — tg u, внутренняя — u = 2x.',
+      solution:
+        '<p><b>Шаг 1.</b> (tg u)′ = u′/cos²u.</p>' +
+        '<p><b>Шаг 2.</b> u = 2x, u′ = 2.</p>' +
+        '<p><b>Шаг 3.</b> y′ = 2/cos²(2x).</p>' +
+        '<p><b>Ответ:</b> <b>y′ = 2/cos²(2x)</b>.</p>'
+    },
+    { difficulty: 3,
+      statement: 'y = arctg(x²)',
+      answer: "y′ = 2x/(1 + x⁴)",
+      accept: ['y\' = 2x/(1 + x^4)', 'y′ = 2x/(1 + x⁴)',
+               '2x/(1+x^4)', '2x/(1+x⁴)'],
+      hint: 'Сложная функция: внешняя — arctg u, внутренняя — u = x².',
+      solution:
+        '<p><b>Шаг 1.</b> (arctg u)′ = u′/(1 + u²).</p>' +
+        '<p><b>Шаг 2.</b> u = x², u′ = 2x.</p>' +
+        '<p><b>Шаг 3.</b> y′ = 2x/(1 + (x²)²) = 2x/(1 + x⁴).</p>' +
+        '<p><b>Ответ:</b> <b>y′ = 2x/(1 + x⁴)</b>.</p>'
+    },
+    { difficulty: 3,
+      statement: 'y = (x² + 1)/(x² − 1)',
+      answer: "y′ = −4x/(x² − 1)²",
+      accept: ['y\' = -4x/(x^2 - 1)^2', 'y′ = −4x/(x² − 1)²',
+               '-4x/(x^2-1)^2', '−4x/(x²−1)²'],
+      hint: 'Правило частного: u = x² + 1, v = x² − 1.',
+      solution:
+        '<p><b>Шаг 1.</b> u = x² + 1, v = x² − 1.</p>' +
+        '<p><b>Шаг 2.</b> u′ = 2x, v′ = 2x.</p>' +
+        '<p><b>Шаг 3.</b> Числитель: u′v − uv′ = 2x(x² − 1) − (x² + 1)·2x.</p>' +
+        '<p><b>Шаг 4.</b> = 2x[(x² − 1) − (x² + 1)] = 2x·(−2) = −4x.</p>' +
+        '<p><b>Ответ:</b> <b>y′ = −4x/(x² − 1)²</b>.</p>'
+    }
+  ],
+
+  /* ================== ИНТЕГРАЛЫ (24) ================== */
+  integrals: [
+    /* ---- ★ ТАБЛИЧНЫЕ (1–8) ---- */
+    { difficulty: 1,
+      statement: '∫ x⁵ dx',
+      answer: 'x⁶/6 + C',
+      accept: ['x^6/6 + C', 'x⁶/6+C', 'x^6/6+C', '(1/6)x^6 + C'],
+      hint: 'Формула: ∫ xⁿ dx = xⁿ⁺¹/(n+1) + C.',
+      solution:
+        '<p><b>Шаг 1.</b> Здесь n = 5.</p>' +
+        '<p><b>Шаг 2.</b> ∫ x⁵ dx = x⁶/6 + C.</p>' +
+        '<p><b>Ответ:</b> <b>x⁶/6 + C</b>.</p>'
+    },
+    { difficulty: 1,
+      statement: '∫ sin x dx',
+      answer: '−cos x + C',
+      accept: ['-cos x + C', '−cos x+C', '-cos x+C', '-cosx+C', '−cosx+C'],
+      hint: 'Таблица: ∫ sin x dx = −cos x + C. Обратите внимание на минус!',
+      solution:
+        '<p><b>Шаг 1.</b> Табличный интеграл.</p>' +
+        '<p><b>Шаг 2.</b> ∫ sin x dx = −cos x + C.</p>' +
+        '<p><b>Ответ:</b> <b>−cos x + C</b>.</p>'
+    },
+    { difficulty: 1,
+      statement: '∫ cos x dx',
+      answer: 'sin x + C',
+      accept: ['sin x + C', 'sinx+C', 'sin x+C', 'sinx + C'],
+      hint: 'Таблица: ∫ cos x dx = sin x + C.',
+      solution:
+        '<p><b>Шаг 1.</b> Табличный интеграл.</p>' +
+        '<p><b>Шаг 2.</b> ∫ cos x dx = sin x + C.</p>' +
+        '<p><b>Ответ:</b> <b>sin x + C</b>.</p>'
+    },
+    { difficulty: 1,
+      statement: '∫ e^x dx',
+      answer: 'e^x + C',
+      accept: ['e^x + C', 'e^x+C', 'eˣ + C'],
+      hint: 'Таблица: ∫ e^x dx = e^x + C.',
+      solution:
+        '<p><b>Шаг 1.</b> Табличный интеграл.</p>' +
+        '<p><b>Шаг 2.</b> ∫ e<sup>x</sup> dx = e<sup>x</sup> + C.</p>' +
+        '<p><b>Ответ:</b> <b>e<sup>x</sup> + C</b>.</p>'
+    },
+    { difficulty: 1,
+      statement: '∫ (1/x) dx',
+      answer: 'ln|x| + C',
+      accept: ['ln|x| + C', 'ln|x|+C', 'ln |x| + C', 'ln|x| +C'],
+      hint: 'Таблица: ∫ dx/x = ln|x| + C. Не забудьте модуль!',
+      solution:
+        '<p><b>Шаг 1.</b> Табличный интеграл.</p>' +
+        '<p><b>Шаг 2.</b> ∫ (1/x) dx = ln|x| + C.</p>' +
+        '<p><b>Ответ:</b> <b>ln|x| + C</b>.</p>'
+    },
+    { difficulty: 1,
+      statement: '∫ (3x² + 2x) dx',
+      answer: 'x³ + x² + C',
+      accept: ['x^3 + x^2 + C', 'x³+x²+C', 'x^3+x^2+C', 'x³ + x² +C'],
+      hint: 'Правило суммы: интеграл от суммы = сумма интегралов.',
+      solution:
+        '<p><b>Шаг 1.</b> ∫ 3x² dx = 3·x³/3 = x³.</p>' +
+        '<p><b>Шаг 2.</b> ∫ 2x dx = 2·x²/2 = x².</p>' +
+        '<p><b>Шаг 3.</b> Складываем: x³ + x² + C.</p>' +
+        '<p><b>Ответ:</b> <b>x³ + x² + C</b>.</p>'
+    },
+    { difficulty: 1,
+      statement: '∫ dx/cos²x',
+      answer: 'tg x + C',
+      accept: ['tg x + C', 'tgx + C', 'tg x+C', 'tan x + C'],
+      hint: 'Табличный интеграл. Производная tg x = 1/cos²x.',
+      solution:
+        '<p><b>Шаг 1.</b> Табличный интеграл.</p>' +
+        '<p><b>Шаг 2.</b> ∫ dx/cos²x = tg x + C.</p>' +
+        '<p><b>Ответ:</b> <b>tg x + C</b>.</p>'
+    },
+    { difficulty: 1,
+      statement: '∫ dx/(1 + x²)',
+      answer: 'arctg x + C',
+      accept: ['arctg x + C', 'arctan x + C', 'arctgx + C', 'arctg x+C'],
+      hint: 'Табличный интеграл. Производная arctg x = 1/(1+x²).',
+      solution:
+        '<p><b>Шаг 1.</b> Табличный интеграл.</p>' +
+        '<p><b>Шаг 2.</b> ∫ dx/(1 + x²) = arctg x + C.</p>' +
+        '<p><b>Ответ:</b> <b>arctg x + C</b>.</p>'
+    },
+
+    /* ---- ★★ ЗАМЕНА (9–16) ---- */
+    { difficulty: 2,
+      statement: '∫ 2x·cos(x²) dx',
+      answer: 'sin(x²) + C',
+      accept: ['sin(x^2) + C', 'sin(x²)+C', 'sin(x^2)+C', 'sin x² + C'],
+      hint: 'Замена t = x², тогда dt = 2x dx.',
+      solution:
+        '<p><b>Шаг 1.</b> Замечаем: (x²)′ = 2x. Вводим t = x².</p>' +
+        '<p><b>Шаг 2.</b> dt = 2x dx.</p>' +
+        '<p><b>Шаг 3.</b> ∫ cos t dt = sin t + C.</p>' +
+        '<p><b>Шаг 4.</b> Обратная замена: sin(x²) + C.</p>' +
+        '<p><b>Ответ:</b> <b>sin(x²) + C</b>.</p>'
+    },
+    { difficulty: 2,
+      statement: '∫ e^(3x) dx',
+      answer: '(1/3)·e^(3x) + C',
+      accept: ['(1/3)e^(3x) + C', 'e^(3x)/3 + C', 'e^(3x)/3+C',
+               '(1/3)·e^(3x)+C'],
+      hint: 'Замена t = 3x, тогда dt = 3 dx.',
+      solution:
+        '<p><b>Шаг 1.</b> t = 3x, dt = 3 dx, значит dx = dt/3.</p>' +
+        '<p><b>Шаг 2.</b> ∫ e<sup>t</sup>·(dt/3) = (1/3)∫ e<sup>t</sup> dt.</p>' +
+        '<p><b>Шаг 3.</b> = (1/3)e<sup>t</sup> + C = (1/3)e<sup>3x</sup> + C.</p>' +
+        '<p><b>Ответ:</b> <b>(1/3)·e<sup>3x</sup> + C</b>.</p>'
+    },
+    { difficulty: 2,
+      statement: '∫ (2x + 1)⁵ dx',
+      answer: '(2x + 1)⁶/12 + C',
+      accept: ['(2x+1)^6/12 + C', '(2x + 1)⁶/12 + C', '(2x+1)^6/12+C',
+               '(2x+1)⁶/12+C'],
+      hint: 'Замена t = 2x + 1, тогда dt = 2 dx.',
+      solution:
+        '<p><b>Шаг 1.</b> t = 2x + 1, dt = 2 dx ⇒ dx = dt/2.</p>' +
+        '<p><b>Шаг 2.</b> ∫ t⁵·(dt/2) = (1/2)·t⁶/6 = t⁶/12.</p>' +
+        '<p><b>Шаг 3.</b> Обратная замена: (2x + 1)⁶/12 + C.</p>' +
+        '<p><b>Ответ:</b> <b>(2x + 1)⁶/12 + C</b>.</p>'
+    },
+    { difficulty: 2,
+      statement: '∫ x·e^(x²) dx',
+      answer: '(1/2)·e^(x²) + C',
+      accept: ['(1/2)e^(x^2) + C', 'e^(x^2)/2 + C', 'e^(x²)/2 + C',
+               '(1/2)·e^(x²)+C'],
+      hint: 'Замена t = x², тогда dt = 2x dx.',
+      solution:
+        '<p><b>Шаг 1.</b> t = x², dt = 2x dx ⇒ x dx = dt/2.</p>' +
+        '<p><b>Шаг 2.</b> ∫ e<sup>t</sup>·(dt/2) = (1/2)e<sup>t</sup> + C.</p>' +
+        '<p><b>Шаг 3.</b> Обратная замена: (1/2)e<sup>x²</sup> + C.</p>' +
+        '<p><b>Ответ:</b> <b>(1/2)·e<sup>x²</sup> + C</b>.</p>'
+    },
+    { difficulty: 2,
+      statement: '∫ sin(5x) dx',
+      answer: '−(1/5)·cos(5x) + C',
+      accept: ['-(1/5)cos(5x) + C', '−cos(5x)/5 + C', '-cos(5x)/5 + C',
+               '−(1/5)·cos(5x)+C'],
+      hint: 'Замена t = 5x, dt = 5 dx.',
+      solution:
+        '<p><b>Шаг 1.</b> t = 5x, dt = 5 dx ⇒ dx = dt/5.</p>' +
+        '<p><b>Шаг 2.</b> ∫ sin t·(dt/5) = (1/5)·(−cos t) + C.</p>' +
+        '<p><b>Шаг 3.</b> Обратная замена: −(1/5)cos(5x) + C.</p>' +
+        '<p><b>Ответ:</b> <b>−(1/5)·cos(5x) + C</b>.</p>'
+    },
+    { difficulty: 2,
+      statement: '∫ (ln x)/x dx',
+      answer: '(ln x)²/2 + C',
+      accept: ['(ln x)^2/2 + C', '(ln x)²/2 + C', '(lnx)^2/2 + C',
+               'ln²x/2 + C'],
+      hint: 'Замена t = ln x, тогда dt = dx/x.',
+      solution:
+        '<p><b>Шаг 1.</b> t = ln x, dt = dx/x.</p>' +
+        '<p><b>Шаг 2.</b> ∫ t dt = t²/2 + C.</p>' +
+        '<p><b>Шаг 3.</b> Обратная замена: (ln x)²/2 + C.</p>' +
+        '<p><b>Ответ:</b> <b>(ln x)²/2 + C</b>.</p>'
+    },
+    { difficulty: 2,
+      statement: '∫ x/(x² + 1) dx',
+      answer: '(1/2)·ln(x² + 1) + C',
+      accept: ['(1/2)ln(x^2 + 1) + C', 'ln(x^2 + 1)/2 + C',
+               '(1/2)·ln(x² + 1)+C', 'ln(x²+1)/2 + C'],
+      hint: 'Замена t = x² + 1, тогда dt = 2x dx.',
+      solution:
+        '<p><b>Шаг 1.</b> t = x² + 1, dt = 2x dx ⇒ x dx = dt/2.</p>' +
+        '<p><b>Шаг 2.</b> ∫ (dt/2)/t = (1/2)·ln|t| + C.</p>' +
+        '<p><b>Шаг 3.</b> Обратная замена: (1/2)ln(x² + 1) + C.</p>' +
+        '<p><b>Ответ:</b> <b>(1/2)·ln(x² + 1) + C</b>.</p>'
+    },
+    { difficulty: 2,
+      statement: '∫ dx/(2x + 3)',
+      answer: '(1/2)·ln|2x + 3| + C',
+      accept: ['(1/2)ln|2x + 3| + C', 'ln|2x+3|/2 + C',
+               '(1/2)·ln|2x+3|+C'],
+      hint: 'Замена t = 2x + 3, тогда dt = 2 dx.',
+      solution:
+        '<p><b>Шаг 1.</b> t = 2x + 3, dt = 2 dx ⇒ dx = dt/2.</p>' +
+        '<p><b>Шаг 2.</b> ∫ (dt/2)/t = (1/2)·ln|t| + C.</p>' +
+        '<p><b>Шаг 3.</b> Обратная замена: (1/2)ln|2x + 3| + C.</p>' +
+        '<p><b>Ответ:</b> <b>(1/2)·ln|2x + 3| + C</b>.</p>'
+    },
+
+    /* ---- ★★★ ПО ЧАСТЯМ (17–24) ---- */
+    { difficulty: 3,
+      statement: '∫ x·e^x dx',
+      answer: 'e^x·(x − 1) + C',
+      accept: ['e^x(x - 1) + C', 'e^x·(x − 1) + C', 'e^x(x-1)+C',
+               'xe^x - e^x + C'],
+      hint: 'По частям: u = x, dv = e^x dx.',
+      solution:
+        '<p><b>Шаг 1.</b> u = x, dv = e<sup>x</sup> dx.</p>' +
+        '<p><b>Шаг 2.</b> du = dx, v = e<sup>x</sup>.</p>' +
+        '<p><b>Шаг 3.</b> ∫ u dv = uv − ∫ v du = x·e<sup>x</sup> − ∫ e<sup>x</sup> dx.</p>' +
+        '<p><b>Шаг 4.</b> = x·e<sup>x</sup> − e<sup>x</sup> + C = e<sup>x</sup>(x − 1) + C.</p>' +
+        '<p><b>Ответ:</b> <b>e<sup>x</sup>·(x − 1) + C</b>.</p>'
+    },
+    { difficulty: 3,
+      statement: '∫ x·cos x dx',
+      answer: 'x·sin x + cos x + C',
+      accept: ['x sin x + cos x + C', 'x·sin x + cos x + C',
+               'xsinx + cosx + C', 'xsinx+cosx+C'],
+      hint: 'По частям: u = x, dv = cos x dx.',
+      solution:
+        '<p><b>Шаг 1.</b> u = x, dv = cos x dx.</p>' +
+        '<p><b>Шаг 2.</b> du = dx, v = sin x.</p>' +
+        '<p><b>Шаг 3.</b> ∫ x cos x dx = x·sin x − ∫ sin x dx.</p>' +
+        '<p><b>Шаг 4.</b> = x·sin x − (−cos x) + C = x·sin x + cos x + C.</p>' +
+        '<p><b>Ответ:</b> <b>x·sin x + cos x + C</b>.</p>'
+    },
+    { difficulty: 3,
+      statement: '∫ x·sin x dx',
+      answer: '−x·cos x + sin x + C',
+      accept: ['-x cos x + sin x + C', '−x·cos x + sin x + C',
+               '-xcosx + sinx + C', '−xcosx+sinx+C'],
+      hint: 'По частям: u = x, dv = sin x dx.',
+      solution:
+        '<p><b>Шаг 1.</b> u = x, dv = sin x dx.</p>' +
+        '<p><b>Шаг 2.</b> du = dx, v = −cos x.</p>' +
+        '<p><b>Шаг 3.</b> ∫ x sin x dx = x·(−cos x) − ∫ (−cos x) dx.</p>' +
+        '<p><b>Шаг 4.</b> = −x·cos x + ∫ cos x dx = −x·cos x + sin x + C.</p>' +
+        '<p><b>Ответ:</b> <b>−x·cos x + sin x + C</b>.</p>'
+    },
+    { difficulty: 3,
+      statement: '∫ ln x dx',
+      answer: 'x·ln x − x + C',
+      accept: ['x ln x - x + C', 'x·ln x − x + C', 'xlnx - x + C',
+               'x*lnx - x + C'],
+      hint: 'По частям: u = ln x, dv = dx.',
+      solution:
+        '<p><b>Шаг 1.</b> u = ln x, dv = dx.</p>' +
+        '<p><b>Шаг 2.</b> du = dx/x, v = x.</p>' +
+        '<p><b>Шаг 3.</b> ∫ ln x dx = x·ln x − ∫ x·(dx/x) = x·ln x − ∫ dx.</p>' +
+        '<p><b>Шаг 4.</b> = x·ln x − x + C.</p>' +
+        '<p><b>Ответ:</b> <b>x·ln x − x + C</b>.</p>'
+    },
+    { difficulty: 3,
+      statement: '∫ x·ln x dx',
+      answer: 'x²/2·ln x − x²/4 + C',
+      accept: ['x^2/2 ln x - x^2/4 + C', 'x²/2·ln x − x²/4 + C',
+               'x^2/2*lnx - x^2/4 + C', 'x²lnx/2 − x²/4 + C'],
+      hint: 'По частям: u = ln x, dv = x dx.',
+      solution:
+        '<p><b>Шаг 1.</b> u = ln x, dv = x dx.</p>' +
+        '<p><b>Шаг 2.</b> du = dx/x, v = x²/2.</p>' +
+        '<p><b>Шаг 3.</b> ∫ x ln x dx = (x²/2)·ln x − ∫ (x²/2)·(dx/x).</p>' +
+        '<p><b>Шаг 4.</b> = (x²/2)·ln x − (1/2)∫ x dx = (x²/2)·ln x − (1/2)·(x²/2) + C.</p>' +
+        '<p><b>Шаг 5.</b> = x²/2·ln x − x²/4 + C.</p>' +
+        '<p><b>Ответ:</b> <b>x²/2·ln x − x²/4 + C</b>.</p>'
+    },
+    { difficulty: 3,
+      statement: '∫ x²·e^x dx',
+      answer: 'e^x·(x² − 2x + 2) + C',
+      accept: ['e^x(x^2 - 2x + 2) + C', 'e^x·(x² − 2x + 2) + C',
+               'e^x(x²-2x+2)+C', 'e^x*(x^2-2x+2)+C'],
+      hint: 'По частям дважды: сначала u = x², затем u = 2x.',
+      solution:
+        '<p><b>Шаг 1.</b> Первое по частям: u = x², dv = e<sup>x</sup> dx. ' +
+        'Тогда du = 2x dx, v = e<sup>x</sup>.</p>' +
+        '<p><b>Шаг 2.</b> ∫ x² e<sup>x</sup> dx = x²·e<sup>x</sup> − ∫ 2x·e<sup>x</sup> dx.</p>' +
+        '<p><b>Шаг 3.</b> Второе по частям: для ∫ x·e<sup>x</sup> dx ' +
+        'получаем x·e<sup>x</sup> − e<sup>x</sup>.</p>' +
+        '<p><b>Шаг 4.</b> Итого: x²·e<sup>x</sup> − 2(x·e<sup>x</sup> − e<sup>x</sup>) + C.</p>' +
+        '<p><b>Шаг 5.</b> = e<sup>x</sup>(x² − 2x + 2) + C.</p>' +
+        '<p><b>Ответ:</b> <b>e<sup>x</sup>·(x² − 2x + 2) + C</b>.</p>'
+    },
+    { difficulty: 3,
+      statement: '∫ x·cos(2x) dx',
+      answer: 'x·sin(2x)/2 + cos(2x)/4 + C',
+      accept: ['x sin(2x)/2 + cos(2x)/4 + C',
+               'x·sin(2x)/2 + cos(2x)/4 + C',
+               'xsin2x/2 + cos2x/4 + C'],
+      hint: 'По частям: u = x, dv = cos(2x) dx. Помните про внутреннюю 2.',
+      solution:
+        '<p><b>Шаг 1.</b> u = x, dv = cos(2x) dx.</p>' +
+        '<p><b>Шаг 2.</b> du = dx. Находим v: v = ∫ cos(2x) dx = (1/2)·sin(2x).</p>' +
+        '<p><b>Шаг 3.</b> ∫ x·cos(2x) dx = x·(1/2)sin(2x) − ∫ (1/2)sin(2x) dx.</p>' +
+        '<p><b>Шаг 4.</b> = (x/2)·sin(2x) − (1/2)·(−(1/2)cos(2x)) + C.</p>' +
+        '<p><b>Шаг 5.</b> = x·sin(2x)/2 + cos(2x)/4 + C.</p>' +
+        '<p><b>Ответ:</b> <b>x·sin(2x)/2 + cos(2x)/4 + C</b>.</p>'
+    },
+    { difficulty: 3,
+      statement: '∫ arctg x dx',
+      answer: 'x·arctg x − (1/2)·ln(1 + x²) + C',
+      accept: ['x arctg x - (1/2)ln(1 + x^2) + C',
+               'x·arctg x − (1/2)·ln(1 + x²) + C',
+               'xarctgx - (1/2)ln(1+x^2) + C',
+               'x·arctg x − ½ ln(1 + x²) + C'],
+      hint: 'По частям: u = arctg x, dv = dx.',
+      solution:
+        '<p><b>Шаг 1.</b> u = arctg x, dv = dx.</p>' +
+        '<p><b>Шаг 2.</b> du = dx/(1 + x²), v = x.</p>' +
+        '<p><b>Шаг 3.</b> ∫ arctg x dx = x·arctg x − ∫ x·dx/(1 + x²).</p>' +
+        '<p><b>Шаг 4.</b> Второй интеграл с заменой t = 1 + x², dt = 2x dx:</p>' +
+        '<p>∫ x·dx/(1 + x²) = (1/2)·ln(1 + x²).</p>' +
+        '<p><b>Шаг 5.</b> Итого: x·arctg x − (1/2)·ln(1 + x²) + C.</p>' +
+        '<p><b>Ответ:</b> <b>x·arctg x − (1/2)·ln(1 + x²) + C</b>.</p>'
+    }
+  ]
+};
+
+/* =========================================================
+   ЛОГИКА
+   ========================================================= */
+var STORAGE_KEY = 'deriv_int_trainer_v1';
+var progress = {};
+try { progress = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+catch (e) { progress = {}; }
+
+function saveProgress() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (e) {}
+  updateProgressBar();
+}
+
+function updateProgressBar() {
+  var total = 0;
+  for (var k in TASKS) total += TASKS[k].length;
+  var solved = 0;
+  for (var id in progress) if (progress[id]) solved++;
+  var el = document.getElementById('progress-count');
+  if (el) el.textContent = solved + ' / ' + total;
+}
+
+function normalize(s) {
+  return String(s).toLowerCase()
+    .replace(/\s+/g, '')
+    .replace(/[·⋅×*]/g, '')
+    .replace(/[−–—]/g, '-')
+    .replace(/,/g, '.')
+    .replace(/²/g, '^2').replace(/³/g, '^3').replace(/⁴/g, '^4')
+    .replace(/⁵/g, '^5').replace(/⁶/g, '^6').replace(/⁷/g, '^7')
+    .replace(/⁻/g, '-')
+    .replace(/\{/g, '(').replace(/\}/g, ')')
+    .replace(/\[/g, '(').replace(/\]/g, ')')
+    .replace(/\\left|\\right/g, '')
+    .replace(/\\ln/g, 'ln')
+    .replace(/\\arctan|\\arctg/g, 'arctg')
+    .replace(/\\tan|\\tg/g, 'tg')
+    .replace(/\\sin/g, 'sin').replace(/\\cos/g, 'cos')
+    .replace(/\\sqrt/g, 'sqrt').replace(/\\pm/g, '±')
+    .replace(/\\cdot/g, '')
+    .replace(/½/g, '1/2').replace(/¼/g, '1/4').replace(/¾/g, '3/4')
+    .replace(/⅓/g, '1/3').replace(/⅔/g, '2/3');
+}
+
+function checkAnswer(userAnswer, task) {
+  var u = normalize(userAnswer);
+  if (!u) return false;
+  var list = [task.answer].concat(task.accept || []);
+  for (var i = 0; i < list.length; i++) {
+    if (normalize(list[i]) === u) return true;
+  }
+  return false;
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function buildTask(task, idx, sectionKey) {
+  var id = sectionKey + '-' + idx;
+  var stars = '★'.repeat(task.difficulty) + '☆'.repeat(3 - task.difficulty);
+  var isSolved = !!progress[id];
+  var val = (isSolved && progress[id].user) ? progress[id].user : '';
+
+  var div = document.createElement('div');
+  div.className = 'task' + (isSolved ? ' solved' : '');
+  div.dataset.id = id;
+  div.innerHTML =
+    '<div class="task-head">' +
+      '<span class="task-num">Задача ' + (idx + 1) + '</span>' +
+      '<span class="stars" title="Сложность">' + stars + '</span>' +
+      (isSolved ? '<span class="badge">решено</span>' : '') +
+    '</div>' +
+    '<div class="task-statement">' + task.statement + '</div>' +
+    '<div class="answer-row">' +
+      '<input type="text" placeholder="Например: y′ = 5x⁴" value="' + esc(val) + '">' +
+    '</div>' +
+    '<div class="answer-row">' +
+      '<button class="btn-primary" data-act="check">Проверить ответ</button>' +
+      '<button class="btn-warn"    data-act="hint">Подсказка</button>' +
+      '<button class="btn-ghost"   data-act="sol">Показать решение</button>' +
+    '</div>' +
+    '<div class="feedback"></div>' +
+    '<div class="hint-block"></div>' +
+    '<div class="solution-block"><h4>Решение</h4>' + task.solution + '</div>';
+  return div;
+}
+
+function initSection(key, containerId) {
+  var box = document.getElementById(containerId);
+  if (!box) return;
+  TASKS[key].forEach(function (t, i) { box.appendChild(buildTask(t, i, key)); });
+
+  box.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    var card = btn.closest('.task');
+    var id = card.dataset.id;
+    var idx = parseInt(id.split('-')[1], 10);
+    var task = TASKS[key][idx];
+    var fb = card.querySelector('.feedback');
+    var hint = card.querySelector('.hint-block');
+    var sol = card.querySelector('.solution-block');
+    var input = card.querySelector('input');
+
+    if (btn.dataset.act === 'check') {
+      var u = input.value.trim();
+      if (!u) { fb.className = 'feedback info'; fb.textContent = 'Введите ответ.'; return; }
+      if (checkAnswer(u, task)) {
+        fb.className = 'feedback ok';
+        fb.textContent = '✅ Верно!';
+        card.classList.add('solved');
+        progress[id] = { solved: true, user: u };
+        saveProgress();
+        if (!card.querySelector('.badge')) {
+          var b = document.createElement('span');
+          b.className = 'badge'; b.textContent = 'решено';
+          card.querySelector('.task-head').appendChild(b);
+        }
+      } else {
+        fb.className = 'feedback err';
+        fb.innerHTML = '❌ Не совпадает с эталоном.<br><b>Эталон:</b> ' +
+                       '<span style="font-family:Cambria Math,serif;font-size:16px">' +
+                       task.answer + '</span><br>' +
+                       '<span style="font-size:13px">Возможно, ваш ответ эквивалентен — ' +
+                       'проверьте вручную или нажмите «Показать решение».</span>';
+      }
+    }
+
+    if (btn.dataset.act === 'hint') {
+      var show = hint.style.display !== 'block';
+      hint.style.display = show ? 'block' : 'none';
+      if (show) hint.innerHTML = task.hint || 'Подсказка отсутствует.';
+    }
+
+    if (btn.dataset.act === 'sol') {
+      var showS = sol.style.display !== 'block';
+      sol.style.display = showS ? 'block' : 'none';
+      if (showS) {
+        fb.className = 'feedback info';
+        fb.innerHTML = '📘 Эталонный ответ: ' +
+          '<span style="font-family:Cambria Math,serif;font-size:16px">' +
+          task.answer + '</span>';
+      }
+    }
+  });
+
+  box.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+      e.preventDefault();
+      e.target.closest('.task').querySelector('button[data-act="check"]').click();
+    }
+  });
+}
+
+function initNav() {
+  var links = document.querySelectorAll('#nav a');
+  links.forEach(function (a) {
+    a.addEventListener('click', function () {
+      links.forEach(function (x) { x.classList.remove('active'); });
+      a.classList.add('active');
+    });
+  });
+  if (typeof IntersectionObserver !== 'undefined') {
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          links.forEach(function (x) {
+            x.classList.toggle('active', x.dataset.target === en.target.id);
+          });
+        }
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    document.querySelectorAll('section').forEach(function (s) { obs.observe(s); });
+  }
+}
+
+function start() {
+  initSection('derivatives', 'tasks-derivatives');
+  initSection('integrals',   'tasks-integrals');
+  initNav();
+  updateProgressBar();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', start);
+} else {
+  start();
+}
+</script>
+</body>
+</html>
